@@ -28,7 +28,7 @@
 !/src/Makefile.am
 !/src/bin/
 /src/bin/*
-!/src/bin/Makefile
+!/src/bin/Makefile.am
 !/src/bin/l2agent.c
 !/src/bin/l2switch.c
 !/src/include/
