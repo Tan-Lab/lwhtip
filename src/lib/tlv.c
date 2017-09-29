@@ -41,6 +41,7 @@ void print_tlvs(const char *buf, const size_t len)
         u_int tlv_len = 0;
 
         p = buf;
+
         while (p < buf + len) {
                 tlv_len = get_tlv_len((struct tlv_header *) p);
                 print_tlv((struct tlv_header *) p, tlv_len);
@@ -51,6 +52,7 @@ void print_tlvs(const char *buf, const size_t len)
 void print_tlv(const struct tlv_header *th, const u_int len)
 {
         printf("  TLV type: %x, len: %u\n", th->tlv_type, len);
+
         switch (th->tlv_type) {
         case END_OF_LLDPDU_TLV:
                 printf("    End of LLDPDU\n");
@@ -424,6 +426,7 @@ int create_htip_device_info_tlv(u_char *p, u_char device_info_id,
         default:
                 break;
         }
+
         hdih.device_info_id = device_info_id;
         hdih.device_info_len = device_info_len;
         memcpy(p + TLV_HEADER_LEN + HTIP_TLV_HEADER_LEN, &hdih, HTIP_DEVICE_INFO_HEADER_LEN);
@@ -442,13 +445,21 @@ int create_basic_htip_device_info_tlv(u_char *p,
         u_int len = 0;
 
         len += create_htip_device_info_tlv(p + len, HTIP_DEVICE_INFO_DEVICE_CATEGORY, device_category, device_category_len);
+#ifdef DEBUG
         printf("    htip device info category len: %d\n", len);
+#endif /* DEBUG */
         len += create_htip_device_info_tlv(p + len, HTIP_DEVICE_INFO_MODEL_NAME, model_name, model_name_len);
+#ifdef DEBUG
         printf("    htip device info model name len: %d\n", len);
+#endif /* DEBUG */
         len += create_htip_device_info_tlv(p + len, HTIP_DEVICE_INFO_MANUFACTURER_CODE, manufacturer_code, HTIP_DEVICE_INFO_MANUFACTURER_CODE_LEN);
+#ifdef DEBUG
         printf("    htip device info manufacturer code len: %d\n", len);
+#endif /* DEBUG */
         len += create_htip_device_info_tlv(p + len, HTIP_DEVICE_INFO_MODEL_NUMBER, model_number, model_number_len);
+#ifdef DEBUG
         printf("    htip device info model name number: %d\n", len);
+#endif /* DEBUG */
 
         return len;
 }
@@ -478,7 +489,10 @@ int create_htip_link_info_tlv(u_char *p, u_int32_t iftype, u_int16_t port_no, u_
         else
                 fragment = macaddr_num / max_macaddr_num + 1;
 
+#ifdef DEBUG
         printf("\tHTIP link info fragments: %d, msc mac: %d\n", fragment, max_macaddr_num);
+#endif /* DEBUG */
+
         for (i = 0; i < fragment; i++) {
                 macaddr_num_tlv = max_macaddr_num;
                 if (i + 1 == fragment)
@@ -499,9 +513,12 @@ int create_htip_link_info_tlv(u_char *p, u_int32_t iftype, u_int16_t port_no, u_
                         memcpy(p + len, macaddrs[i * max_macaddr_num + j], ETHER_ADDR_LEN);
                         len += ETHER_ADDR_LEN;
                 }
+
+#ifdef DEBUG
                 printf("\t\tHTIP link info tlv len: %d, created len: %d, macaddr_num_tlv: %d, MAXTLVLEN: %d, HTIP_TLV_HEADER_LEN: %d, HTIP_LINK_INFO_HEADER_LEN: %d\n",
                         TLV_HEADER_LEN + HTIP_TLV_HEADER_LEN + HTIP_LINK_INFO_HEADER_LEN + ETHER_ADDR_LEN * macaddr_num_tlv, len, macaddr_num_tlv, MAX_TLV_LEN,
                                                 HTIP_TLV_HEADER_LEN, HTIP_LINK_INFO_HEADER_LEN);
+#endif /* DEBUG */
         }
 
         return len;
@@ -515,7 +532,9 @@ int create_basic_htip_link_info_tlv(u_char *p, u_char *macaddr,
 
         memcpy(p + len, link_info_tlv_payload, link_info_tlv_len);
         len += link_info_tlv_len;
+#ifdef DEBUG
         printf("    htip link info tlv len: %d\n", len);
+#endif /* DEBUG */
 
         return len;
 }

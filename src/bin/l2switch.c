@@ -39,11 +39,6 @@ void signal_handler(int sig)
         return;
 }
 
-/*
- * Just print MAC forwarding table.
- * argv[1]: bridge name
- * argv[2]: number of printing MAC forwarding table
- */
 int main(int argc, char** argv) {
         char *argv0 = NULL, *brifname = NULL;
         int c;
@@ -110,7 +105,6 @@ int main(int argc, char** argv) {
                 print_ifinfo();
 
                 /* main loop: send HTIP frame every 30 seconds */
-                /* store FDB entries */
                 if (load_fdb(brifname, MAX_FDB_ENTRY_SIZE) == -1) {
                         fprintf(stderr, "load_fdb() failed.\n");
                         goto finalize;
@@ -123,23 +117,18 @@ int main(int argc, char** argv) {
                         fprintf(stderr, "send_htip_device_link_info() failed\n");
                         goto finalize;
                 }
-                printf("sent htip link info\n");
 
                 close_netif();
-                printf("free fdb entry\n");
-                // free_ifinfo_list();
-                free_fdb_entry();
-                printf("sleep\n");
-                sleep(29);
-        }
 
-        /* set timer (i.e. every 30 sec) */
-        /* send frame for all NIC */
+                free_fdb_entry();
+
+                sleep(30);
+        }
 
 finalize:
         free_ifinfo_list();
+
         free_fdb_entry();
 
         return (EXIT_SUCCESS);
 }
-

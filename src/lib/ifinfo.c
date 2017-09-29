@@ -70,6 +70,7 @@ int set_ifinfo_list_num(int num)
                 fprintf(stderr, "Specified number is invalid(%d).\n", num);
                 return -1;
         }
+
         ifinfo_list_num = num;
 
         return 0;
@@ -84,6 +85,7 @@ int increment_ifinfo_list_num(void)
                 fprintf(stderr, "network interface list is already full.\n");
                 return -1;
         }
+
         ifinfo_list_num += 1;
 
         return 0;
@@ -100,6 +102,7 @@ int set_ifinfo_list_size(int size)
                 fprintf(stderr, "Specified size is invalid(%d).\n", size);
                 return -1;
         }
+
         ifinfo_list_size = size;
 
         return 0;
@@ -164,6 +167,7 @@ int set_ifinfo_addr(char *ifname, char *ipaddr, char *netmask)
                 fprintf(stderr, "matching entry not found for ifname: %s\n", ifname);
                 return -1;
         }
+
         memcpy(p->ipaddr, ipaddr, INET6_ADDRSTRLEN);
         memcpy(p->netmask, netmask, INET6_ADDRSTRLEN);
 
@@ -193,6 +197,7 @@ int set_ifinfo_iftype(char *ifname, int iftype)
                 fprintf(stderr, "matching entry not found for ifname: %s\n", ifname);
                 return -1;
         }
+
         p->iftype = iftype;
 
         return 0;
@@ -206,6 +211,7 @@ int set_ifinfo_portno(char *ifname, u_int16_t port_no)
                 fprintf(stderr, "matching entry not found for ifname: %s\n", ifname);
                 return -1;
         }
+
         p->port_no = port_no;
 
         return 0;
@@ -318,10 +324,16 @@ int read_ifinfo(void)
         }
 
         for (ifa = ifa_list; ifa != NULL; ifa = ifa->ifa_next) {
+#ifdef DEBUG
                 printf("  getifaddrs if: %s\n", ifa->ifa_name);
+#endif /* DEBUG */
+
                 if (is_valid_ifaddr(ifa) < 0)
                         continue;
+
+#ifdef DEBUG
                 printf("  getifaddrs available if: %s\n", ifa->ifa_name);
+#endif /* DEBUG */
                 nifs += 1;
         }
 
@@ -349,17 +361,22 @@ int read_ifinfo(void)
                 memset(netmask, 0, INET6_ADDRSTRLEN);
                 strncpy(ifrbuf.ifr_name, ifa->ifa_name, IFNAMSIZ);
                 ifr = &ifrbuf;
+#ifdef DEBUG
                 printf("ifname: %s\n", ifr->ifr_name);
+#endif /* DEBUG */
                 addr = &(ifr->ifr_addr);
 
                 if (ioctl(sock, SIOCGIFADDR, ifr) != -1) {
                         if (inet_ntop(AF_INET, &(((struct sockaddr_in *)addr)->sin_addr), ip, sizeof(ip)) == NULL) {
                                 perror("inet_ntop");
                         }
+
                         addr = &(ifr->ifr_netmask);
+
                         if (ioctl(sock, SIOCGIFNETMASK, ifr) == -1) {
                                 perror("ioctl(SIOCGIFNETMASK)");
                         }
+
                         if (inet_ntop(AF_INET, &(((struct sockaddr_in *)addr)->sin_addr), netmask, sizeof(netmask)) == NULL) {
                                 perror("inet_ntop");
                         }
@@ -433,7 +450,9 @@ int is_valid_ifaddr(struct ifaddrs *ifa)
                 return -1;
 
         /* Currently IPv4 support */
+#ifdef DEBUG
          fprintf(stderr, "    is_valid_ifaddr family: %x\n", ifa->ifa_addr->sa_family);
+#endif /* DEBUG */
 #ifdef __linux__
         if (ifa->ifa_addr->sa_family != PF_PACKET)
 #endif /* __linux__ */
@@ -491,8 +510,10 @@ void print_netif(void)
         for (ifa = ifa_list; ifa != NULL; ifa = ifa->ifa_next) {
                 memset(addr, 0, sizeof(addr));
                 memset(netmask, 0, sizeof(netmask));
-
+#ifdef DEBUG
                 printf("  ifname: %s, ifa flags: 0x%.8x\n", ifa->ifa_name, ifa->ifa_flags);
+#endif /* DEBUG */
+
                 switch (ifa->ifa_addr->sa_family) {
                 case AF_INET:
                         if (inet_ntop(AF_INET, &((struct sockaddr_in *) ifa->ifa_addr)->sin_addr, addr, sizeof(addr)) == NULL) {
@@ -509,6 +530,7 @@ void print_netif(void)
                                 perror("inet_ntop");
                                 return;
                         }
+
                         if (inet_ntop(AF_INET6, &((struct sockaddr_in6 *) ifa->ifa_netmask)->sin6_addr, netmask, sizeof(netmask)) == NULL) {
                                 perror("inet_ntop");
                                 return;
@@ -518,13 +540,17 @@ void print_netif(void)
                         printf("  ifa sa_family: %u\n", ifa->ifa_addr->sa_family);
                         break;
                 }
+#ifdef DEBUG
                 printf("    addr: %s, netmask: %s\n", addr, netmask);
+#endif /* DEBUG */
                 dl = (struct sockaddr_dl *) ifa->ifa_addr;
                 if (dl->sdl_family == AF_LINK && dl->sdl_type == IFT_ETHER) {
                         dl_addr = (unsigned char *) LLADDR(dl);
+#ifdef DEBUG
                         printf("    mac: %02x:%02x:%02x:%02x:%02x:%02x\n",
                                 dl_addr[0], dl_addr[1], dl_addr[2], dl_addr[3],
                                 dl_addr[4], dl_addr[5]);
+#endif /* DEBUG */
                 }
         }
 }
@@ -565,11 +591,13 @@ int read_ifinfo(void)
                         }
                 }
         }
+
         for (ifa = ifa_list; ifa != NULL; ifa = ifa->ifa_next) {
                 if (search_ifinfo_by_ifname(ifa->ifa_name) == NULL)
                         continue;
                 memset(addr, 0, sizeof(addr));
                 memset(netmask, 0, sizeof(netmask));
+
                 switch (ifa->ifa_addr->sa_family) {
                 /* currently, ignore IPv6 */
                 case AF_INET:
@@ -590,6 +618,7 @@ int read_ifinfo(void)
                         break;
                 }
         }
+
         freeifaddrs(ifa_list);
 
         return 0;

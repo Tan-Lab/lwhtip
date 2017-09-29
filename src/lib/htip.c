@@ -38,12 +38,12 @@ int send_htip_device_info(u_char *device_category, int device_category_len,
         for (i = 0; i < num; i++) {
                 len = 0;
                 rlen = 0;
-
                 ifip = get_ifinfo_list() + IFINFO_LEN * i;
 
                 if (ifip->fd < 0) {
                         continue;
                 }
+
                 if ((payload = malloc(ETH_DATA_LEN)) == NULL) {
                         perror("malloc");
                         return -1;
@@ -57,7 +57,7 @@ int send_htip_device_info(u_char *device_category, int device_category_len,
                     (u_char *) ifip->ifname, strlen(ifip->ifname),
                     device_category, device_category_len, manufacturer_code,
                     model_name, model_name_len, model_number,
-                    model_number_len)) < 0) {
+                    model_number_len)) == 0) {
                         fprintf(stderr, "create_required_htip_device_info_tlv() failed\n");
                         return -1;
                 }
@@ -96,8 +96,10 @@ int send_htip_link_info(void)
                 ifip = get_ifinfo_list() + IFINFO_LEN * i;
                 memset(macaddrs, 0, sizeof(macaddrs));
                 macaddr_num = get_remote_entry_num_by_macaddr(ifip->macaddr, macaddrs);
+
                 if (macaddr_num == 0)
                         continue;
+
                 link_info_tlv_len += get_htip_link_info_tlv_len(ETHER_ADDR_LEN, macaddr_num);
         }
 
@@ -105,6 +107,7 @@ int send_htip_link_info(void)
                 perror("malloc");
                 return -1;
         }
+
         for (i = 0; i < num; i++) {
                 len = 0;
                 rlen = 0;
@@ -186,12 +189,15 @@ int send_htip_device_link_info(u_char *device_category,
         }
 
         len = 0;
+
         for (i = 0; i < num; i++) {
                 ifip = get_ifinfo_list() + IFINFO_LEN * i;
                 memset(macaddrs, 0, sizeof(macaddrs));
                 macaddr_num = get_remote_entry_num_by_macaddr(ifip->macaddr, macaddrs);
+#ifdef DEBUG
                 printf("  HTIP link info try to create if: %s, iftype: %d, port: %d, mac_num: %d\n",
                         ifip->ifname, ifip->iftype, port_no, macaddr_num);
+#endif /* DEBUG */
 
                 if ((port_no = get_portno_by_macaddr(ifip->macaddr)) == FDB_ENTRY_PORT_INVALID) {
                         fprintf(stderr, "get_portno_by_macaddr() failed with IF: %s.\n", ifip->ifname);
@@ -201,9 +207,12 @@ int send_htip_device_link_info(u_char *device_category,
 
                 rlen = create_htip_link_info_tlv(link_info_payload + len, ifip->iftype, port_no, macaddrs, macaddr_num);
                 len += rlen;
+#ifdef DEBUG
                 printf("  HTIP link info create if: %s, iftype: %d, port: %d, mac_num: %d, len: %d\n",
                                  ifip->ifname, ifip->iftype, port_no, macaddr_num, rlen);
+#endif /* DEBUG */
         }
+
         if (len != link_info_tlv_len) {
                 fprintf(stderr, "calculated len: %d differ from created len: %d.\n", link_info_tlv_len, len);
         }
@@ -219,6 +228,7 @@ int send_htip_device_link_info(u_char *device_category,
 
                 memset(macaddrs, 0, sizeof(macaddrs));
                 macaddr_num = get_remote_entry_num_by_macaddr(ifip->macaddr, macaddrs);
+
                 if (macaddr_num == 0)
                         continue;
 
@@ -236,11 +246,13 @@ int send_htip_device_link_info(u_char *device_category,
                         (u_char *) ifip->ifname, strlen(ifip->ifname),
                         device_category, device_category_len,
                         manufacturer_code, model_name, model_name_len,
-                        model_number, model_number_len)) < 0) {
+                        model_number, model_number_len)) == 0) {
                         fprintf(stderr, "create_required_htip_device_info_tlv() failed\n");
                         return -1;
                 }
+
                 len += rlen;
+
                 if ((rlen = create_basic_htip_link_info_tlv(payload + len,
                         ifip->macaddr, ETHER_ADDR_LEN,
                         (u_char *) ifip->ifname, strlen(ifip->ifname),
@@ -248,11 +260,14 @@ int send_htip_device_link_info(u_char *device_category,
                         fprintf(stderr, "create_basic_htip_link_info_tlv() failed\n");
                         return -1;
                 }
+
                 len += rlen;
                 len += create_end_of_lldpdu_tlv(payload + len);
-
+#ifdef DEBUG
                 printf("  htip frame created: %d bytes using macaddr: %02x:%02x:%02x:%02x:%02x:%02x, ifname: %s.\n",
                         len, ifip->macaddr[0], ifip->macaddr[1], ifip->macaddr[2], ifip->macaddr[3], ifip->macaddr[4], ifip->macaddr[5], ifip->ifname);
+#endif /* DEBUG */
+
                 if ((n = write_frame(ifip->fd, ifip->ifname, dstaddr, ifip->macaddr, payload, len)) < 0) {
                         fprintf(stderr, "write_frame() failed on ifname: %s.\n", ifip->ifname);
                         return -1;
@@ -260,10 +275,13 @@ int send_htip_device_link_info(u_char *device_category,
 
                 if (n != (len + sizeof(struct ether_header)))
                         fprintf(stderr, "sent bytes: %d != htip frame bytes:%d\n", n, len);
+#ifdef DEBUG
                 fprintf(stderr, "\tsent htip bytes: %d\n", len);
+#endif /* DEBUG */
 
                 free(payload);
         }
+
         free(link_info_payload);
 
         return 0;

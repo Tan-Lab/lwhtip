@@ -1,4 +1,4 @@
-# lwhtip README-jp
+# lwhtip README-JP
 
 # 概要
 lwhtipは、TTC標準JJ-300.00v3(以下HTIP)をC言語で実装したソフトウェアです。
@@ -36,8 +36,8 @@ HTIP L2Agentは、実行ホストの機器情報を定期的にブロードキ�
 
         src/bin/l2agent
 
-## HTIP NW機器
-HTIP NW機器は、実行ホストの機器情報と接続構成情報を定期的にブロードキャストします。
+## HTIP L2Agent (HTIP-NW機器)
+HTIP-NW機器(L2スイッチ)上のHTIP L2Agentは、実行ホストの機器情報と接続構成情報を定期的にブロードキャストします。
 利用する前に brctl コマンドでブリッジを作成してください。
 例えば br0 というブリッジインタフェースを作成し、en0とen1のネットワークインタフェースをブリッジする場合、以下のコマンドを実行してください。
 
@@ -45,7 +45,7 @@ HTIP NW機器は、実行ホストの機器情報と接続構成情報を定期�
         brctl addif br0 en0
         brctl addif br0 en1
 
-ブリッジインタフェースを作成した後以下のコマンドを実行しHTIP NW機器を開始してください。
+ブリッジインタフェースを作成した後以下のコマンドを実行しHTIP L2Agent(HTIP-NW機器)を開始してください。
 
         l2switch -i br0
 

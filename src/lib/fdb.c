@@ -72,6 +72,7 @@ int set_fdb_entry_num(int num)
                 fprintf(stderr, "Invalid FDB entry number: %d\n", num);
                 return -1;
         }
+
         fdb_entry_num = num;
 
         return 0;
@@ -88,6 +89,7 @@ int set_fdb_entry_size(int size)
                 fprintf(stderr, "Invalid FDB entry size: %d\n", size);
                 return -1;
         }
+
         fdb_entry_size = size;
 
         return 0;
@@ -101,6 +103,7 @@ void *malloc_fdb_entry(const int size)
                 fprintf(stderr, "invalid FDB entry size: %d\n", size);
                 return NULL;
         }
+
         memset(fdb_entry_list, 0, MAX_FDB_ENTRY_SIZE * FDB_ENTRY_LEN);
 
         if (set_fdb_entry_num(0) == -1) {
@@ -137,6 +140,7 @@ int add_fdb_entry(const struct fdb_entry *fdbp)
                 fprintf(stderr, "Specified FDB entry already exist. n: %d\n", n);
                 return -1;
         }
+
         p = &fdb_entry_list[n];
         memcpy(p, fdbp, FDB_ENTRY_LEN);
 
@@ -237,7 +241,6 @@ int read_fdb(const char *bridge_name)
         struct fdb_entry *fdbs, fdb;
         unsigned long offset = 0;
         int num = MAX_FDB_ENTRY_SIZE;
-
         struct __fdb_entry fe[num];
         unsigned long args[4] = {BRCTL_GET_FDB_ENTRIES,
                                  (unsigned long) fe, num, offset};
@@ -253,35 +256,40 @@ int read_fdb(const char *bridge_name)
         }
 
         if (f) {
-                printf("\tsysfs\n");
                 if (fseek(f, offset * sizeof(struct __fdb_entry), SEEK_SET) == -1) {
                         perror("fseek");
                         return -1;
                 }
+
                 n = fread(fe, sizeof(struct __fdb_entry), num, f);
+
                 if (fclose(f) == EOF) {
                         perror("fclose");
                         return -1;
                 }
         } else {
-                printf("\told kernel, use ioctl\n");
                 if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
                         perror("socket");
                         return errno;
                 }
+
                 strncpy(ifr.ifr_name, bridge_name, IFNAMSIZ);
                 ifr.ifr_data = (char *) args;
 
                 retry:
                         n = ioctl(sock, SIOCDEVPRIVATE, &ifr);
+
                         if (n < 0 && errno == EAGAIN && ++retries < 10) {
                                 sleep(0);
                                 goto retry;
                         }
+
                 close(sock);
         }
+
         for (i = 0; i < n; i++) {
                 copy_fdb(&fdb, &fe[i]);
+
                 if (add_fdb_entry(&fdb) < 0) {
                         fprintf(stderr, "add_fdb_entry() failed.\n");
                 }
