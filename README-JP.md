@@ -18,7 +18,7 @@ lwhtipは以下の要件を満たすコンピュータ上でコンパイル及�
 # インストール
 lwhtipはターミナルアプリケーション上で以下のコマンドを実行することで利用できます。
 
-        autoreconf -i
+        autoreconf -fi
         ./configure
         make
         make install

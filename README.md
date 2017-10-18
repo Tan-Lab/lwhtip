@@ -18,7 +18,7 @@ lwhtip requires
 # Installation
 To install lwhtip, run following commands on a terminal application.
 
-        autoreconf -i
+        autoreconf -fi
         ./configure
         make
         make install
