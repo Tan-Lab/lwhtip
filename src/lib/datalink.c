@@ -41,9 +41,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#ifndef _NET_IF_H
-#define _NET_IF_H 1
-#endif /* _NET_IF_H */
 #include <linux/wireless.h>
 #include <linux/if_bridge.h>
 #endif /* __linux__ */

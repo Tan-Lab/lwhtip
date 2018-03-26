@@ -22,7 +22,6 @@ extern "C" {
 
 #ifdef __linux__
 #include <netinet/in.h>
-#include <linux/if_bridge.h>
 #endif
 #include <sys/time.h>
 #include <net/ethernet.h>
