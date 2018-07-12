@@ -409,6 +409,7 @@ int read_ifinfo(void)
                 return -1;
         }
 
+        freeifaddrs(ifa_list);
         return 0;
 }
 
