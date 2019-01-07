@@ -56,17 +56,53 @@ void signal_handler(int sig)
         exit(EXIT_SUCCESS);
 }
 
+const char *select_one(const char* first, const char *second) {
+	return first?first:second;
+}
+
+u_char *get_device_category() {
+    static u_char *device_category = NULL;
+    if (device_category == NULL) {
+	    device_category = strndup(select_one(getenv("DEVICE_CATEGORY"), "AV_TV"), 255);
+    }
+    return device_category;
+}
+
+u_char *get_manufacturer_code() {
+    static u_char *manufacturer_code = NULL;
+    if (manufacturer_code == NULL) {
+	    manufacturer_code = strndup(select_one(getenv("MANUFACTURER_CODE"), "JAIST"), 6);
+    }
+    return manufacturer_code;
+}
+
+u_char *get_model_name() {
+    static u_char *model_name = NULL;
+    if (model_name == NULL) {
+	    model_name = strndup(select_one(getenv("MODEL_NAME"), "JAIST_VTV_01"), 31);
+    }
+    return model_name;
+}
+
+u_char *get_model_number() {
+    static u_char *model_number = NULL;
+    if (model_number == NULL) {
+	    model_number = strndup(select_one(getenv("MODEL_NUMBER"), "VTV01"), 31);
+    }
+    return model_number;
+}
+
 int main(int argc, char **argv) {
         char *argv0;
         int c;
         /** HTIP device category, 0 ~ 255 bytes */
-        u_char device_category[] = "AV_TV";
+        u_char *device_category = get_device_category();
         /** HTIP manufacturer code, 6 bytes */
-        u_char manufacturer_code[] = "JAIST";
+        u_char *manufacturer_code = get_manufacturer_code();
         /** HTIP model name, 0 ~ 31 bytes */
-        u_char model_name[] = "JAIST_VTV_01";
+        u_char *model_name = get_model_name();
         /** HTIP model number, 0 ~ 31 bytes */
-        u_char model_number[] = "VTV01";
+        u_char *model_number = get_model_number();
 
         argv0 = argv[0];
 
@@ -92,6 +128,11 @@ int main(int argc, char **argv) {
         if (signal(SIGINT, signal_handler) == SIG_ERR) {
                 goto finalize;
         }
+
+	printf("device_category: %s\n", device_category);
+	printf("manufacturer_code: %s\n", manufacturer_code);
+	printf("model_name: %s\n", model_name);
+	printf("model_number: %s\n", model_number);
 
         /* store network interface information */
         if (read_ifinfo() < 0) {

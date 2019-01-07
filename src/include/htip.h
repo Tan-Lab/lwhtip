@@ -54,11 +54,12 @@ int send_htip_link_info(void);
  * @param model_name_len A length of a model name, the max length is 31
  * @param mdoel_number A pointer to a model number
  * @param model_number_len A length of a model number, the max length is 31
+ * @param srcaddr Source address of the HTIP frame
  * @return If succeed, it returns 0. If failed, it returns -1.
  */
 int send_htip_device_link_info(u_char *device_category,
         int device_category_len, u_char *manufacturer_code, u_char *model_name,
-        int model_name_len, u_char *model_number, int model_number_len);
+        int model_name_len, u_char *model_number, int model_number_len, u_char *srcaddr);
 #ifdef __cplusplus
 }
 #endif

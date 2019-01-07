@@ -306,6 +306,38 @@ void print_ifinfo(void)
         }
 }
 
+u_char *alloc_brifaddr(char *brifname) {
+        int i, sock;
+        struct ifreq ifr;
+        u_char *addr = NULL;
+
+        strncpy(ifr.ifr_name, brifname, sizeof(ifr.ifr_name)-1);
+
+        if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+                perror("socket");
+                return NULL;
+        }
+
+        if (ioctl(sock, SIOCGIFHWADDR, &ifr) == -1) {
+                perror("ioctl");
+                goto DONE;
+        }
+
+        if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
+                fprintf(stderr, "alloc_brifaddr() invalid sa_family: %d.\n", ifr.ifr_hwaddr.sa_family);
+                goto DONE;
+        }
+
+        addr = malloc(6);
+        for (i=0; i<6; i++) {
+                addr[i] = ((unsigned char *)ifr.ifr_hwaddr.sa_data)[i];
+        }
+
+DONE:
+        close(sock);
+        return addr;
+}
+
 #ifdef __linux__
 int read_ifinfo(void)
 {
