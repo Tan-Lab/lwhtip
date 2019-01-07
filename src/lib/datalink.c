@@ -167,6 +167,10 @@ u_int32_t get_iftype(const char *ifname)
                 }
         }
 switch_dlt:
+        if ((sock != -1) && (close(sock) == -1)) {
+                perror("close");
+        }
+
         switch (dlt) {
                 /* Currently support only ethernet and IEEE 802.11 */
                 case HW_ETHER:
@@ -176,11 +180,6 @@ switch_dlt:
                 default:
                         fprintf(stderr, "Unsupported datalink type:%u\n", dlt);
                         return IANAIFTYPE_OTHER;
-        }
-
-        if (close(sock) == -1) {
-                perror("close");
-                return IANAIFTYPE_OTHER;
         }
 }
 

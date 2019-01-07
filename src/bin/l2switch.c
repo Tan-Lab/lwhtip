@@ -39,17 +39,53 @@ void signal_handler(int sig)
         return;
 }
 
+const char *select_one(const char* first, const char *second) {
+	return first?first:second;
+}
+
+u_char *get_device_category() {
+    static u_char *device_category = NULL;
+    if (device_category == NULL) {
+	    device_category = strndup(select_one(getenv("DEVICE_CATEGORY"), "COM_Switch"), 255);
+    }
+    return device_category;
+}
+
+u_char *get_manufacturer_code() {
+    static u_char *manufacturer_code = NULL;
+    if (manufacturer_code == NULL) {
+	    manufacturer_code = strndup(select_one(getenv("MANUFACTURER_CODE"), "JAIST"), 6);
+    }
+    return manufacturer_code;
+}
+
+u_char *get_model_name() {
+    static u_char *model_name = NULL;
+    if (model_name == NULL) {
+	    model_name = strndup(select_one(getenv("MODEL_NAME"), "JAIST_VSW_01"), 31);
+    }
+    return model_name;
+}
+
+u_char *get_model_number() {
+    static u_char *model_number = NULL;
+    if (model_number == NULL) {
+	    model_number = strndup(select_one(getenv("MODEL_NUMBER"), "VSW01"), 31);
+    }
+    return model_number;
+}
+
 int main(int argc, char** argv) {
         char *argv0 = NULL, *brifname = NULL;
         int c;
         /* 0 ~ 255 bytes */
-        u_char device_category[] = "COM_Switch";
+        u_char *device_category = get_device_category();
         /* 6 bytes */
-        u_char manufacturer_code[] = "JAIST";
+        u_char *manufacturer_code = get_manufacturer_code();
         /* 0 ~ 31 bytes */
-        u_char model_name[] = "JAIST_VSW_01";
+        u_char *model_name = get_model_name();
         /* 0 ~ 31 bytes */
-        u_char model_number[] = "VSW01";
+        u_char *model_number = get_model_number();
 
         argv0 = argv[0];
         while ((c = getopt(argc, argv, "i:l:")) != -1) {
@@ -82,6 +118,13 @@ int main(int argc, char** argv) {
                 goto finalize;
         }
 
+	printf("device_category: %s\n", device_category);
+	printf("manufacturer_code: %s\n", manufacturer_code);
+	printf("model_name: %s\n", model_name);
+	printf("model_number: %s\n", model_number);
+
+        u_char *srcaddr = alloc_brifaddr(brifname);
+
         for (;;) {
                 /* store network interface information */
                 if (read_ifinfo() < 0) {
@@ -112,7 +155,7 @@ int main(int argc, char** argv) {
 
                 if (send_htip_device_link_info(device_category,
                         sizeof(device_category), manufacturer_code, model_name,
-                        sizeof(model_name), model_number, sizeof(model_number))
+                        sizeof(model_name), model_number, sizeof(model_number), alloc_brifaddr(brifname))
                         < 0) {
                         fprintf(stderr, "send_htip_device_link_info() failed\n");
                         goto finalize;

@@ -254,6 +254,8 @@ int num_netif(struct ifaddrs *ifa_list);
 int is_available_ifaddr(struct ifaddrs *ifa);
 #endif /* __APPLE__ */
 
+u_char *alloc_brifaddr(char *brifname);
+
 #ifdef __cplusplus
 }
 #endif

@@ -165,7 +165,7 @@ int send_htip_link_info(void)
 
 int send_htip_device_link_info(u_char *device_category,
         int device_category_len, u_char *manufacturer_code, u_char *model_name,
-        int model_name_len, u_char *model_number, int model_number_len)
+        int model_name_len, u_char *model_number, int model_number_len, u_char *srcaddr)
 {
         u_char dstaddr[] = HTIP_L2AGENT_DST_MACADDR;
         struct ifinfo *ifip;
@@ -239,7 +239,11 @@ int send_htip_device_link_info(u_char *device_category,
 
                 memset(payload, 0, ETH_DATA_LEN);
 
+if (srcaddr) {
+                len += create_lldp_tlv(payload, srcaddr, ETHER_ADDR_LEN, (u_char *) ifip->ifname, strlen(ifip->ifname));
+} else {
                 len += create_lldp_tlv(payload, ifip->macaddr, ETHER_ADDR_LEN, (u_char *) ifip->ifname, strlen(ifip->ifname));
+}
 
                 if ((rlen = create_basic_htip_device_info_tlv(payload + len,
                         ifip->macaddr, ETHER_ADDR_LEN,
@@ -268,10 +272,17 @@ int send_htip_device_link_info(u_char *device_category,
                         len, ifip->macaddr[0], ifip->macaddr[1], ifip->macaddr[2], ifip->macaddr[3], ifip->macaddr[4], ifip->macaddr[5], ifip->ifname);
 #endif /* DEBUG */
 
+if (srcaddr) {
+                if ((n = write_frame(ifip->fd, ifip->ifname, dstaddr, srcaddr, payload, len)) < 0) {
+                        fprintf(stderr, "write_frame() failed on ifname: %s.\n", ifip->ifname);
+                        return -1;
+                }
+} else {
                 if ((n = write_frame(ifip->fd, ifip->ifname, dstaddr, ifip->macaddr, payload, len)) < 0) {
                         fprintf(stderr, "write_frame() failed on ifname: %s.\n", ifip->ifname);
                         return -1;
                 }
+}
 
                 if (n != (len + sizeof(struct ether_header)))
                         fprintf(stderr, "sent bytes: %d != htip frame bytes:%d\n", n, len);
