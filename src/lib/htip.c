@@ -215,6 +215,9 @@ int send_htip_device_link_info(u_char *device_category,
 
         if (len != link_info_tlv_len) {
                 fprintf(stderr, "calculated len: %d differ from created len: %d.\n", link_info_tlv_len, len);
+                //use the created len always, to avoid garbage between the last connection information
+                //and the frame's end of lldpu tlv
+                link_info_tlv_len = len;
         }
 
         for (i = 0; i < num; i++) {
