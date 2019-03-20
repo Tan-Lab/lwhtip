@@ -114,8 +114,8 @@ struct ifinfo *search_ifinfo_by_ifname(const char *ifname)
         int i, num = get_ifinfo_list_num();
 
         for (i = 0; i < num; i++) {
-                p = get_ifinfo_list() + IFINFO_LEN * i;
-                if (strcmp(ifname, p->ifname) == 0)
+                p = get_ifinfo_list() + i;
+                if (strncmp(ifname, p->ifname, IFNAMSIZ) == 0)
                         return p;
         }
 
@@ -132,7 +132,7 @@ struct ifinfo *get_empty_ifinfo(void)
                 fprintf(stderr, "ifinfo list is already full.\n");
                 return NULL;
         }
-        return p + IFINFO_LEN * num;
+        return p + num;
 }
 
 int set_ifinfo_list_ifname(char *ifname)
@@ -266,7 +266,7 @@ int open_netif(void)
         int i, num = get_ifinfo_list_num();
 
         for (i = 0; i < num; i++) {
-                p = get_ifinfo_list() + IFINFO_LEN * i;
+                p = get_ifinfo_list() + i;
                 if ((p->fd = set_promiscuous_mode(p->ifname)) < 0) {
                         fprintf(stderr, "set_promiscuous_mode() failed on net ifname: %s\n", p->ifname);
                         // return -1;
@@ -282,7 +282,7 @@ void close_netif(void)
         int i = 0, num = get_ifinfo_list_num();
 
         for (i = 0; i < num; i++) {
-                p = get_ifinfo_list() + IFINFO_LEN * i;
+                p = get_ifinfo_list() + i;
                 if (p->fd >= 0)
                         if (close(p->fd) < 0)
                                 perror("close");
@@ -299,7 +299,7 @@ void print_ifinfo(void)
 
         printf("  print ifinfo list num: %d, size: %d.\n", get_ifinfo_list_num(), get_ifinfo_list_size());
         for (i = 0; i < num; i++) {
-                p = get_ifinfo_list() + IFINFO_LEN * i;
+                p = get_ifinfo_list() + i;
                 ether_addr_str(p->macaddr, macaddr);
                 printf("   ifname: %s, fd: %d, ip: %s, netmask: %s, mac: %s, type: %d, port: %d\n",
                         p->ifname, p->fd, p->ipaddr, p->netmask, macaddr, p->iftype, p->port_no);
@@ -511,7 +511,7 @@ int read_net_type(void)
         u_int32_t dlt;
 
         for (i = 0; i < num; i++) {
-                p = get_ifinfo_list() + IFINFO_LEN * i;
+                p = get_ifinfo_list() + i;
 
                 if ((dlt = get_iftype(p->ifname)) == HW_INVALID) {
                         fprintf(stderr, "get_iftype() failed.\n");

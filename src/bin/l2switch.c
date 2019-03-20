@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 	printf("model_name: %s\n", model_name);
 	printf("model_number: %s\n", model_number);
 
-        u_char *srcaddr = alloc_brifaddr(brifname);
+        u_char *srcaddr = NULL;
 
         for (;;) {
                 /* store network interface information */
@@ -153,14 +153,17 @@ int main(int argc, char** argv) {
                         goto finalize;
                 }
 
+
+                srcaddr = alloc_brifaddr(brifname);
                 if (send_htip_device_link_info(device_category,
                         sizeof(device_category), manufacturer_code, model_name,
-                        sizeof(model_name), model_number, sizeof(model_number), alloc_brifaddr(brifname))
+                        sizeof(model_name), model_number, sizeof(model_number), srcaddr)
                         < 0) {
                         fprintf(stderr, "send_htip_device_link_info() failed\n");
                         goto finalize;
                 }
 
+                free(srcaddr);
                 close_netif();
 
                 free_fdb_entry();

@@ -38,7 +38,7 @@ int send_htip_device_info(u_char *device_category, int device_category_len,
         for (i = 0; i < num; i++) {
                 len = 0;
                 rlen = 0;
-                ifip = get_ifinfo_list() + IFINFO_LEN * i;
+                ifip = get_ifinfo_list() + i;
 
                 if (ifip->fd < 0) {
                         continue;
@@ -93,7 +93,7 @@ int send_htip_link_info(void)
         u_int8_t *macaddrs[MAX_FDB_ENTRY_SIZE];
 
         for (i = 0; i < num; i++) {
-                ifip = get_ifinfo_list() + IFINFO_LEN * i;
+                ifip = get_ifinfo_list() + i;
                 memset(macaddrs, 0, sizeof(macaddrs));
                 macaddr_num = get_remote_entry_num_by_macaddr(ifip->macaddr, macaddrs);
 
@@ -111,7 +111,7 @@ int send_htip_link_info(void)
         for (i = 0; i < num; i++) {
                 len = 0;
                 rlen = 0;
-                ifip = get_ifinfo_list() + IFINFO_LEN * i;
+                ifip = get_ifinfo_list() + i;
 
                 if (ifip->fd < 0)
                         continue;
@@ -177,7 +177,7 @@ int send_htip_device_link_info(u_char *device_category,
         char tmp_macaddr[MAC_BUF_SIZE] = {0};
 
         for (i = 0; i < num; i++) {
-                ifip = get_ifinfo_list() + IFINFO_LEN * i;
+                ifip = get_ifinfo_list() + i;
                 memset(macaddrs, 0, sizeof(macaddrs));
                 macaddr_num = get_remote_entry_num_by_macaddr(ifip->macaddr, macaddrs);
                 link_info_tlv_len += get_htip_link_info_tlv_len(ETHER_ADDR_LEN, macaddr_num);
@@ -191,7 +191,7 @@ int send_htip_device_link_info(u_char *device_category,
         len = 0;
 
         for (i = 0; i < num; i++) {
-                ifip = get_ifinfo_list() + IFINFO_LEN * i;
+                ifip = get_ifinfo_list() + i;
                 memset(macaddrs, 0, sizeof(macaddrs));
                 macaddr_num = get_remote_entry_num_by_macaddr(ifip->macaddr, macaddrs);
 #ifdef DEBUG
@@ -224,7 +224,7 @@ int send_htip_device_link_info(u_char *device_category,
                 len = 0;
                 rlen = 0;
 
-                ifip = get_ifinfo_list() + IFINFO_LEN * i;
+                ifip = get_ifinfo_list() + i;
 
                 if (ifip->fd < 0)
                         continue;
