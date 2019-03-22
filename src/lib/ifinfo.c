@@ -479,6 +479,9 @@ int is_valid_ifaddr(struct ifaddrs *ifa)
         int i;
         char *p, empty[IFNAMSIZ] = {0};
 
+        if (ifa == NULL || ifa->ifa_name == NULL)
+                return -1;
+
         if (is_valid_ifname(ifa->ifa_name) == -1)
                 return -1;
 

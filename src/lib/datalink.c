@@ -456,8 +456,11 @@ int write_frame(int fd, char *ifname, u_char *dst_mac, u_char *src_mac,
                 perror("ioctl(SIOCGIFINDEX");
                 return -1;
         }
+        memset(&addr, 0, sizeof(struct sockaddr_ll));
+        addr.sll_family = AF_PACKET;
         addr.sll_ifindex = ifr.ifr_ifindex;
         addr.sll_halen = ETH_ALEN;
+        addr.sll_protocol = htons(0x88cc);
         memcpy(addr.sll_addr, dst_mac, ETHER_ADDR_LEN);
 
         if ((n = sendto(sock, &ef, ef.len, 0, (struct sockaddr *) &addr, sizeof(struct sockaddr_ll))) < 0) {
